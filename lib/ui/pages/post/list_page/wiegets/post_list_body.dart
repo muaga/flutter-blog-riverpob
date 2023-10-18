@@ -10,7 +10,7 @@ class PostListBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    PostListModel? model = ref.watch(postListProvider); // state == null
+    PostListModel? model = ref.watch(postListProvider); // state == null, 구독코드
     List<Post> posts = []; // post가 없다면 빈 배열 = ""
 
     if (model != null) {
