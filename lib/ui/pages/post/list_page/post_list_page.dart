@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blog/data/provider/session_provider.dart';
 import 'package:flutter_blog/ui/pages/post/list_page/wiegets/post_list_body.dart';
+import 'package:flutter_blog/ui/pages/post/list_page/wiegets/post_list_view_model.dart';
 import 'package:flutter_blog/ui/widgets/custom_navigator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
 
-class PostListPage extends StatelessWidget {
+class PostListPage extends ConsumerWidget {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final refreshKey = GlobalKey<RefreshIndicatorState>();
 
   PostListPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // SessionUser sessionUser = ref.read(sessionProvider);
     return Scaffold(
       key: scaffoldKey,
@@ -21,8 +23,12 @@ class PostListPage extends StatelessWidget {
       ),
       body: RefreshIndicator(
         key: refreshKey,
-        onRefresh: () async {},
-        child: PostListBody(),
+        onRefresh: () async {
+          Logger().d("리플래시됨");
+          ref.read(postListProvider.notifier).notifyInit();
+          // 통신해서 다시 내려 받는다
+        },
+        child: PostListBody(), //
       ),
     );
   }
