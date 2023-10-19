@@ -30,27 +30,41 @@ class PostRepository {
     }
   }
 
-  fetchPost(String s, PostSaveReqDTO dto) async {
-    Future<ResponseDTO> fetchPostList(String jwt) async {
-      try {
-        // 1. 통신
-        final response = await dio.post("/post",
-            data: dto.toJson(),
-            options: Options(headers: {"Authorization": "${jwt}"}));
+  Future<ResponseDTO> savePost(String jwt, PostSaveReqDTO dto) async {
+    try {
+      // 1. 통신
+      final response = await dio.post("/post",
+          data: dto.toJson(),
+          options: Options(headers: {"Authorization": "${jwt}"}));
 
-        // 2. ResponseDTO 파싱
-        ResponseDTO responseDTO = ResponseDTO.fromJson(response.data);
+      // 2. ResponseDTO 파싱
+      ResponseDTO responseDTO = ResponseDTO.fromJson(response.data);
 
-        // 3. ResponseDTO의 data 파싱 - map으로 바로 받기
-        Post post = Post.fromJson(responseDTO.data);
+      // 3. ResponseDTO의 data 파싱
+      Post post = Post.fromJson(responseDTO.data);
 
-        // 4. 파싱된 데이터를 다시 공통 DTO로 덮어씌우기
-        responseDTO.data = post;
+      // 4. 파싱된 데이터를 다시 공통 DTO로 덮어씌우기
+      responseDTO.data = post;
 
-        return responseDTO;
-      } catch (e) {
-        return ResponseDTO(-1, "게시글 작성 실패", null);
-      }
+      return responseDTO;
+    } catch (e) {
+      return ResponseDTO(-1, "게시글 작성 실패", null);
+    }
+  }
+
+  Future<ResponseDTO> fetchPost(String jwt, int id) async {
+    try {
+      // 통신
+      Response response = await dio.get("/post/$id",
+          options: Options(headers: {"Authorization": "$jwt"}));
+
+      // 응답 받은 데이터 파싱
+      ResponseDTO responseDTO = ResponseDTO.fromJson(response.data);
+      responseDTO.data = Post.fromJson(responseDTO.data);
+
+      return responseDTO;
+    } catch (e) {
+      return ResponseDTO(-1, "게시글 한건 불러오기 실패", null);
     }
   }
 }

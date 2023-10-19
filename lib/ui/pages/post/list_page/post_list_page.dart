@@ -33,5 +33,3 @@ class PostListPage extends ConsumerWidget {
     );
   }
 }
-
-//
