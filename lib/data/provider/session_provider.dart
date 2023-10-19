@@ -25,6 +25,7 @@ class SessionUser {
   /// 2. 통신의 상태코드로 나눈다.
   Future<void> join(JoinReqDTO joinReqDTO) async {
     // 1. 통신 코드
+
     ResponseDTO responseDTO = await UserRepository().fetchJoin(joinReqDTO);
     // 2. 비즈니스 로직
     if (responseDTO.code == 1) {
@@ -37,14 +38,16 @@ class SessionUser {
 
   Future<void> login(LoginReqDTO loginReqDTO) async {
     // 1. 통신 코드
+
     ResponseDTO responseDTO = await UserRepository().fetchLogin(loginReqDTO);
     // 2. 비즈니스 로직
     if (responseDTO.code == 1) {
       // 1) 세션값 갱신 : 로그인이 성공하면, 창고 데이터 갱신
       // this.user = responseDTO.data as User;
-      this.user = User.fromJson(responseDTO.data);
-      this.jwt = responseDTO.data.token;
+      this.user = responseDTO.data as User;
+      this.jwt = responseDTO.token;
       this.isLogin = true;
+
       // 2) 디바이스에 JWT 저장 : 자동로그인
       await secureStorage.write(key: "jwt", value: responseDTO.token);
       // await를 통해 jwt를 저장하는 것인데, 이건 통신이라서 await를 달아서 통신이 완료 시
@@ -59,16 +62,18 @@ class SessionUser {
   }
 
   Future<void> logout() async {
-    //   // 1. 통신 코드
-    //   ResponseDTO responseDTO = await UserRepository().fetchJoin(joinReqDTO);
-    //   // 2. 비즈니스 로직
-    //   if (responseDTO.code == 1) {
-    //     Navigator.pushNamed(mContext!, Move.loginPage);
-    //   } else {
-    //     ScaffoldMessenger.of(mContext!)
-    //         .showSnackBar(SnackBar(content: Text(responseDTO.msg)));
-    //   }
-    // }
+    /// jwt와 isLogin 상태 변경
+    this.jwt = null;
+    this.isLogin = false;
+    this.user = null;
+
+    /// secureStorage(자동로그인) 삭제
+    await secureStorage.delete(key: "jwt"); // IO
+
+    /// 페이지 이동
+    Navigator.pushNamedAndRemoveUntil(mContext!, "/login", (route) => false);
+    // route이름으로 이동 후 그 이전 모두 삭제(로그아웃)
+    // false -> 이전 목록 삭제, true -> 이전 목록 저장
   }
 }
 
