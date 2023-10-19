@@ -8,11 +8,12 @@ import 'package:flutter_blog/data/provider/session_provider.dart';
 import 'package:flutter_blog/data/repository/post_respository.dart';
 import 'package:flutter_blog/main.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
 
 /// 1. 창고 데이터
 class PostListModel {
   List<Post> posts;
-  PostListModel(this.posts);
+  PostListModel({required this.posts});
 }
 
 /// 2. 창고
@@ -28,25 +29,26 @@ class PostListViewModel extends StateNotifier<PostListModel?> {
     SessionUser sessionUser = ref.read(sessionProvider);
     ResponseDTO responseDTO =
         await PostRepository().fetchPostList(sessionUser.jwt!);
-    state = PostListModel(responseDTO.data);
+    state = PostListModel(posts: responseDTO.data);
   }
 
   Future<void> notifyAdd(PostSaveReqDTO dto) async {
     SessionUser sessionUser = ref.read(sessionProvider);
 
     ResponseDTO responseDTO =
-        await PostRepository().fetchPost(sessionUser.jwt!, dto);
+        await PostRepository().savePost(sessionUser.jwt!, dto);
     // fetchSave할 때, token과 body데이터를 넘겨줘야 한다.
 
     if (responseDTO.code == 1) {
       /// dynamic(post) -> 다운 캐스팅
       Post newPost = responseDTO.data as Post;
+      List<Post> posts = state!.posts;
 
       /// 상태값 추가(List 추가)
-      List<Post> newPosts = [newPost, ...state!.posts];
+      List<Post> newPosts = [newPost, ...posts];
 
       /// 뷰모델(창고) 상태 갱신 완료 -> 구독자(postListPage)는 자동 갱신
-      state = PostListModel(newPosts);
+      state = PostListModel(posts: newPosts);
 
       /// 해당 페이지 삭제
       Navigator.pop(mContext!);
